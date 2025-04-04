@@ -216,7 +216,7 @@ with open('regression_model.pkl', 'wb') as file:
 """# WEB APP INTERFACE"""
 
 # Commented out IPython magic to ensure Python compatibility.
- %%writefile app.py
+
 import streamlit as st
 import pickle
 import pandas as pd
@@ -340,16 +340,16 @@ with tabs[1]:
 
 hr.columns
 
-!npm install localtunnel
+#!npm install localtunnel
 
-!streamlit run app.py &>/content/logs.txt & npx localtunnel --port 8501 & curl ipv4.icanhazip.com
+#!streamlit run app.py &>/content/logs.txt & npx localtunnel --port 8501 & curl ipv4.icanhazip.com
 
-from pyngrok import ngrok
-ngrok.set_auth_token("2v5IArlnsiADJTXKU1Qs7kA5oJ0_3CzEvuzTFE7wvNKu1919J")  # Replace with your actual ngrok auth token
-public_url = ngrok.connect(addr="8501", proto="http")
-print("Streamlit App URL:", public_url)
+#from pyngrok import ngrok
+#ngrok.set_auth_token("2v5IArlnsiADJTXKU1Qs7kA5oJ0_3CzEvuzTFE7wvNKu1919J")  # Replace with your actual ngrok auth token
+#public_url = ngrok.connect(addr="8501", proto="http")
+#print("Streamlit App URL:", public_url)
 
-!streamlit run app.py &>/dev/null &
+#!streamlit run app.py &>/dev/null &
 
 import pickle
 
