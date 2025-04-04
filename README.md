@@ -5,6 +5,7 @@ A Streamlit web app for HR analytics with two key features: predicting employee 
 
 A simple and interactive Streamlit web application for HR data analysis. This app helps HR teams **predict employee attrition** and **analyze performance** using pre-trained machine learning models.
 
+Click here : https://hr-analytics-tool-af6ro4jwssmqus49acv8ll.streamlit.app/
 ## 🚀 Features
 
 - 🔍 **Attrition Prediction** (Classification)
