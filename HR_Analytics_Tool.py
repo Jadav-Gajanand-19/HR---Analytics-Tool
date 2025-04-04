@@ -7,9 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1i4RANvpjh6A69YqvTjssE0q5jtKVqA_1
 """
 
-from google.colab import files
-files.upload()
-
 """Data PreProcessing :
 First Importing all the neccessary libraries and performing the exploratory data analysis (EDA)
 
@@ -126,8 +123,6 @@ print(acc*100)
 
 hr
 
-from google.colab import files
-files.upload()
 
 nd=pd.read_csv('HR_Dataset_2.csv')
 
@@ -201,7 +196,7 @@ y_pred = rf_regressor.predict(X_test)
 mse = mean_squared_error(y_test, y_pred)
 print(f"Mean Squared Error: {mse}")
 
-# prompt: save both regression and classifier model using pickle
+# save both regression and classifier model using pickle
 
 import pickle
 
