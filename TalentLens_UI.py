@@ -146,10 +146,16 @@ elif section == "Performance Analysis":
         submitted2 = st.form_submit_button("Predict Performance")
 
     if submitted2:
-        input_data = pd.DataFrame([[age, education, job_level, job_involvement, job_satisfaction,
-                                    work_life_balance, total_working_years, years_at_company]],
-                                  columns=['Age', 'Education', 'JobLevel', 'JobInvolvement', 'JobSatisfaction',
-                                           'WorkLifeBalance', 'TotalWorkingYears', 'YearsAtCompany'])
+        input_data = pd.DataFrame([{
+            'Age': age,
+            'Education': education,
+            'JobLevel': job_level,
+            'JobInvolvement': job_involvement,
+            'JobSatisfaction': job_satisfaction,
+            'WorkLifeBalance': work_life_balance,
+            'TotalWorkingYears': total_working_years,
+            'YearsAtCompany': years_at_company
+        }])
 
         performance = reg.predict(input_data)[0]
 
