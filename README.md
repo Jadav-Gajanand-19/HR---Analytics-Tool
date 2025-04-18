@@ -1,34 +1,70 @@
-# HR-Analytics-Tool
-A Streamlit web app for HR analytics with two key features: predicting employee attrition (classification) and analyzing performance ratings (regression) using pre-trained ML models.
 
-# 🧠 HR Analytics Streamlit App
+Talent Lens – See Beyond the Resume 👁️‍🗨️
+Welcome to Talent Lens, a smart HR analytics dashboard designed to help you predict employee attrition, evaluate performance, and visualize trends from your workforce data—all in one place.
 
-A simple and interactive Streamlit web application for HR data analysis. This app helps HR teams **predict employee attrition** and **analyze performance** using pre-trained machine learning models.
 
-Click here : https://hr-analytics-tool-af6ro4jwssmqus49acv8ll.streamlit.app/
-## 🚀 Features
 
-- 🔍 **Attrition Prediction** (Classification)
-- 📈 **Performance Analysis** (Regression)
-- 🧾 Separate input forms for each prediction type
-- ⚙️ Easy-to-use Streamlit interface
-- 🧠 Powered by pre-trained Random Forest models
+🚀 Features
+🎯 Attrition Prediction
+Input employee details to predict whether they are at risk of leaving.
 
-## 🛠 Tech Stack
+Optionally view the confidence level of the prediction.
 
-- Python
-- Streamlit
-- Scikit-learn
-- Pandas
-- Pickle (for loading ML models)
+Supports normalized inputs and top feature selection.
 
-## 📦 Installation
+🌟 Performance Analysis
+Predict an employee’s performance rating on a 5-star scale.
 
-1. Clone the repository:
+Input role, department, experience, satisfaction, and more.
 
-```bash
-git clone https://github.com/your-username/hr-analytics-app.git
-cd hr-analytics-app
+Great for performance review preparation and workforce optimization.
+
+📊 Visualize Trends
+Upload your own HR dataset (.csv) to explore insightful trends.
+
+Interactive Plotly charts: histograms, box plots, scatter plots, bar charts, pie charts.
+
+Understand relationships between income, job roles, attrition, satisfaction, and more.
+
+🧠 Models Used
+Classifier: Trained to predict whether an employee is likely to leave.
+
+Regressor: Trained to estimate employee performance on a scale of 1 to 5.
+
+Models are loaded from pickled .pkl files.
+
+🛠️ Tech Stack
+Python 3.8+
+
+Streamlit
+
+scikit-learn
+
+Pandas, NumPy
+
+Plotly, Seaborn, Matplotlib
+
+Pillow (Image processing)
+
+Pickle (for model serialization)
+
+📂 Project Structure
+bash
+Copy
+Edit
+📁 TalentLens/
+├── app.py                     # Main Streamlit app
+├── classifier_model.pkl       # Trained classifier model
+├── regression_model.pkl       # Trained regression model
+├── requirements.txt           # Required Python packages
+📦 Installation & Running
+Clone the repository:
+
+bash
+Copy
+Edit
+git clone https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume.git
+cd TalentLens---See-Beyond-Resume
 Install dependencies:
 
 bash
@@ -41,30 +77,27 @@ bash
 Copy
 Edit
 streamlit run app.py
-📁 Files
-app.py – Main Streamlit application
+📈 Sample Dataset
+For the Visualize Trends section, upload a CSV with columns like:
 
-classifier_model.pkl – Trained classifier for attrition prediction
+Age, Department, MonthlyIncome, Attrition, JobSatisfaction, WorkLifeBalance, etc.
 
-regression_model.pkl – Trained regressor for performance rating
+🎨 UI Highlights
+Responsive layout with dark-text-on-light theme.
 
-requirements.txt – List of Python dependencies
+Custom sidebar with logo, greetings, and leaderboard.
 
-📊 Model Inputs
-Classification Model
-Predicts whether an employee will leave.
+Interactive widgets for a personalized experience.
 
-Input features:
-Age, BusinessTravel, DailyRate, Department, DistanceFromHome, Education, EducationField, EmployeeCount, EmployeeNumber, EnvironmentSatisfaction, Gender, HourlyRate, JobInvolvement, JobLevel, JobRole, JobSatisfaction, MaritalStatus, MonthlyIncome, MonthlyRate, NumCompaniesWorked, Over18, OverTime, PercentSalaryHike, PerformanceRating, RelationshipSatisfaction, StandardHours, StockOptionLevel, TotalWorkingYears, TrainingTimesLastYear, WorkLifeBalance, YearsAtCompany, YearsInCurrentRole, YearsSinceLastPromotion, YearsWithCurrManager
+👥 Built For
+HR Analysts
 
-Regression Model
-Predicts performance rating.
+Talent Management Teams
 
-Input features:
-Same as classification, but replaces PerformanceRating with Attrition.
+Organizational Leaders
 
-🙌 Contributing
-Feel free to fork this repo and submit pull requests to add new features or improve the UI.
+Data-Driven Recruiters
 
-📄 License
-MIT License
+❤️ Credits
+Built with love by Team Talent Lens
+GitHub Repo: TalentLens - See Beyond the Resume
