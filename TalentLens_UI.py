@@ -192,7 +192,7 @@ elif section == "Visualize Trends":
     st.subheader("📊 Visualize Trends")
     st.markdown("Explore trends in employee data from GitHub-hosted dataset.")
 
-    csv_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/hr_dataset.csv"
+    csv_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/HR_Dataset.csv"
     df = pd.read_csv(csv_url)
 
     st.write("### Preview of Data")
