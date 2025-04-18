@@ -195,13 +195,17 @@ elif section == "Performance Analysis":
 
 elif section == "Visualize Trends":
     st.subheader("📊 Visualize Trends")
-    csv_url = "https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/edit/main/HR_Dataset.csv"
+    csv_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/HR_Dataset.csv"
     local_path = "hr_dataset.csv"
 
     try:
         response = requests.get(csv_url)
+        if "text/csv" not in response.headers.get("Content-Type", ""):
+            raise ValueError("The downloaded file is not a CSV. Check the URL or file permissions.")
+
         with open(local_path, "wb") as f:
             f.write(response.content)
+
         df = pd.read_csv(local_path)
     except Exception as e:
         st.error(f"Error loading dataset: {e}")
