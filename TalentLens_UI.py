@@ -98,14 +98,16 @@ if section == "Attrition Prediction":
         submitted1 = st.form_submit_button("Predict Attrition")
 
     if submitted1:
-        input_data = pd.DataFrame([[
-            age, business_travel, daily_rate, department, distance_from_home, education, education_field, environment_satisfaction,
-            gender, hourly_rate, job_involvement, job_level, job_role, job_satisfaction, marital_status, monthly_income,
-            monthly_rate, num_companies_worked, over_time, percent_salary_hike, performance_rating,
-            relationship_satisfaction, stock_option_level, total_working_years, training_times, work_life_balance,
-            years_at_company, years_in_current_role, years_since_last_promotion, years_with_curr_manager
-        ]], columns=clf.feature_names_in_)
-
+        input_dict = {
+            name: val for name, val in zip(clf.feature_names_in_, [
+                age, business_travel, daily_rate, department, distance_from_home, education, education_field, environment_satisfaction,
+                gender, hourly_rate, job_involvement, job_level, job_role, job_satisfaction, marital_status, monthly_income,
+                monthly_rate, num_companies_worked, over_time, percent_salary_hike, performance_rating,
+                relationship_satisfaction, stock_option_level, total_working_years, training_times, work_life_balance,
+                years_at_company, years_in_current_role, years_since_last_promotion, years_with_curr_manager
+            ]) if name in clf.feature_names_in_
+        }
+        input_data = pd.DataFrame([input_dict])
         prediction = clf.predict(input_data)[0]
         st.success(f"Attrition Prediction: {'Yes' if prediction == 1 else 'No'}")
 
@@ -114,6 +116,7 @@ elif section == "Performance Analysis":
     with st.form("regression_form"):
         st.markdown("#### Enter Employee Details")
         attrition_input = st.selectbox("Has the employee left?", ['Yes', 'No'])
+        attrition_map = {'Yes': 1, 'No': 0}
         age = st.slider("Age", 18, 60, 30)
         gender = st.selectbox("Gender", ['Male', 'Female'])
         business_travel = st.selectbox("Business Travel", ['Non-Travel', 'Travel_Rarely', 'Travel_Frequently'])
@@ -147,15 +150,16 @@ elif section == "Performance Analysis":
         submitted2 = st.form_submit_button("Predict Performance")
 
     if submitted2:
-        attrition_map = {'Yes': 1, 'No': 0}
-        input_data = pd.DataFrame([[
-            age, attrition_map.get(attrition_input), business_travel, daily_rate, department, distance_from_home, education,
-            education_field, environment_satisfaction, gender, hourly_rate, job_involvement, job_level, job_role,
-            job_satisfaction, marital_status, monthly_income, monthly_rate, num_companies_worked, over_time,
-            percent_salary_hike, relationship_satisfaction, stock_option_level, total_working_years, training_times,
-            work_life_balance, years_at_company, years_in_current_role, years_since_last_promotion, years_with_curr_manager
-        ]], columns=reg.feature_names_in_)
-
+        input_dict = {
+            name: val for name, val in zip(reg.feature_names_in_, [
+                age, attrition_map.get(attrition_input), business_travel, daily_rate, department, distance_from_home, education,
+                education_field, environment_satisfaction, gender, hourly_rate, job_involvement, job_level, job_role,
+                job_satisfaction, marital_status, monthly_income, monthly_rate, num_companies_worked, over_time,
+                percent_salary_hike, relationship_satisfaction, stock_option_level, total_working_years, training_times,
+                work_life_balance, years_at_company, years_in_current_role, years_since_last_promotion, years_with_curr_manager
+            ]) if name in reg.feature_names_in_
+        }
+        input_data = pd.DataFrame([input_dict])
         prediction = reg.predict(input_data)[0]
         gauge = go.Figure(go.Indicator(
             mode="gauge+number",
@@ -181,7 +185,6 @@ elif section == "Visualize Trends":
                          (df['Gender'].isin(gender_filter)) &
                          (df['EducationField'].isin(education_filter))]
 
-        # Bar Chart: Attrition by Department
         attrition_chart = px.bar(
             filtered_df.groupby(['Department', 'Attrition']).size().reset_index(name='Count'),
             x="Department",
@@ -193,13 +196,11 @@ elif section == "Visualize Trends":
         )
         st.plotly_chart(attrition_chart, use_container_width=True)
 
-        # Pie Chart: Attrition Ratio
         attr_pie = filtered_df['Attrition'].value_counts().reset_index()
         attr_pie.columns = ['Attrition', 'Count']
         pie_chart = px.pie(attr_pie, values='Count', names='Attrition', title='Overall Attrition Distribution')
         st.plotly_chart(pie_chart, use_container_width=True)
 
-        # Line Chart: Monthly Income by Job Role
         if 'MonthlyIncome' in df.columns and 'JobRole' in df.columns:
             line_chart = px.line(
                 df.groupby("JobRole")["MonthlyIncome"].mean().reset_index(),
