@@ -7,7 +7,7 @@ from PIL import Image
 st.set_page_config(page_title="Talent Lens", layout="wide", page_icon="📊")
 
 # --- Branding ---
-logo = Image.open("A_logo_for_\"Talent_Lens\"_is_presented_in_a_digital.png")
+logo = Image.open("https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/blob/main/TalenLens%20Logo.png")
 st.image(logo, width=160)
 st.markdown("""
 # 🎯 Talent Lens
