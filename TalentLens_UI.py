@@ -195,48 +195,41 @@ elif section == "Performance Analysis":
 
 elif section == "Visualize Trends":
     st.subheader("📊 Visualize Trends")
-    csv_url = "https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/blob/main/HR_Dataset.csv"
-    local_path = "hr_dataset.csv"
+    uploaded_file = st.file_uploader("Upload your HR dataset (CSV format)", type=["csv"])
 
-    try:
-        response = requests.get(csv_url)
-        if "text/csv" not in response.headers.get("Content-Type", ""):
-            raise ValueError("The downloaded file is not a CSV. Check the URL or file permissions.")
+    if uploaded_file:
+        try:
+            df = pd.read_csv(uploaded_file)
 
-        with open(local_path, "wb") as f:
-            f.write(response.content)
+            st.write("### Preview of Data")
+            st.dataframe(df.head())
 
-        df = pd.read_csv(local_path)
-    except Exception as e:
-        st.error(f"Error loading dataset: {e}")
-        st.stop()
+            for col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='ignore')
 
-    st.write("### Preview of Data")
-    st.dataframe(df.head())
+            st.markdown("---")
+            st.markdown("### 📌 Automatic Data Visualizations")
 
-    for col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors='ignore')
+            st.plotly_chart(px.histogram(df, x="MonthlyIncome", nbins=30, title="Distribution of Monthly Income"))
+            st.plotly_chart(px.box(df, x="JobRole", y="MonthlyIncome", title="Monthly Income by Job Role"))
+            st.plotly_chart(px.scatter(df, x="TotalWorkingYears", y="MonthlyIncome", color="JobRole", title="Total Working Years vs Monthly Income"))
+            st.plotly_chart(px.bar(df, x="Department", title="Number of Employees by Department"))
+            st.plotly_chart(px.pie(df, names="Gender", title="Gender Distribution"))
+            st.plotly_chart(px.box(df, x="EducationField", y="TotalWorkingYears", title="Working Years by Education Field"))
+            st.plotly_chart(px.histogram(df, x="JobSatisfaction", color="Attrition", barmode="group", title="Attrition vs Job Satisfaction"))
+            st.plotly_chart(px.histogram(df, x="WorkLifeBalance", color="Attrition", barmode="group", title="Attrition vs Work-Life Balance"))
+            st.plotly_chart(px.histogram(df, x="Department", color="Attrition", barmode="group", title="Attrition Rate by Department"))
+            st.plotly_chart(px.histogram(df, x="Gender", color="Attrition", barmode="group", title="Attrition Rate by Gender"))
+            st.plotly_chart(px.bar(df.groupby("JobRole")[["PerformanceRating"]].mean().reset_index(), x="JobRole", y="PerformanceRating", title="Top Performing Job Roles"))
+            st.plotly_chart(px.scatter(df, x="MonthlyIncome", y="PerformanceRating", color="JobRole", title="Monthly Income vs Performance Rating"))
+            st.subheader("Correlation Heatmap")
+            corr = df.corr(numeric_only=True)
+            fig, ax = plt.subplots(figsize=(12, 8))
+            sns.heatmap(corr, cmap="coolwarm", annot=False, ax=ax)
+            st.pyplot(fig)
 
-    st.markdown("---")
-    st.markdown("### 📌 Automatic Data Visualizations")
-
-    st.plotly_chart(px.histogram(df, x="MonthlyIncome", nbins=30, title="Distribution of Monthly Income"))
-    st.plotly_chart(px.box(df, x="JobRole", y="MonthlyIncome", title="Monthly Income by Job Role"))
-    st.plotly_chart(px.scatter(df, x="TotalWorkingYears", y="MonthlyIncome", color="JobRole", title="Total Working Years vs Monthly Income"))
-    st.plotly_chart(px.bar(df, x="Department", title="Number of Employees by Department"))
-    st.plotly_chart(px.pie(df, names="Gender", title="Gender Distribution"))
-    st.plotly_chart(px.box(df, x="EducationField", y="TotalWorkingYears", title="Working Years by Education Field"))
-    st.plotly_chart(px.histogram(df, x="JobSatisfaction", color="Attrition", barmode="group", title="Attrition vs Job Satisfaction"))
-    st.plotly_chart(px.histogram(df, x="WorkLifeBalance", color="Attrition", barmode="group", title="Attrition vs Work-Life Balance"))
-    st.plotly_chart(px.histogram(df, x="Department", color="Attrition", barmode="group", title="Attrition Rate by Department"))
-    st.plotly_chart(px.histogram(df, x="Gender", color="Attrition", barmode="group", title="Attrition Rate by Gender"))
-    st.plotly_chart(px.bar(df.groupby("JobRole")[["PerformanceRating"]].mean().reset_index(), x="JobRole", y="PerformanceRating", title="Top Performing Job Roles"))
-    st.plotly_chart(px.scatter(df, x="MonthlyIncome", y="PerformanceRating", color="JobRole", title="Monthly Income vs Performance Rating"))
-    st.subheader("Correlation Heatmap")
-    corr = df.corr(numeric_only=True)
-    fig, ax = plt.subplots(figsize=(12, 8))
-    sns.heatmap(corr, cmap="coolwarm", annot=False, ax=ax)
-    st.pyplot(fig)
+        except Exception as e:
+            st.error(f"Error loading dataset: {e}")
 
 # --- Footer ---
 st.markdown("""
