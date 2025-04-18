@@ -84,7 +84,7 @@ with st.sidebar.expander("⚙️ Advanced Settings"):
 st.sidebar.markdown("### 🏆 Top Departments (Performance)")
 st.sidebar.markdown("- R&D: ⭐ 4.5\n- Sales: ⭐ 4.3\n- HR: ⭐ 4.1")
 
-section = st.sidebar.radio("Navigate", ["Attrition Prediction", "Performance Analysis", "Visualize Trends", "Dataset Insights"])
+section = st.sidebar.radio("Navigate", ["Attrition Prediction", "Performance Analysis", "Visualize Trends"])
 
 # --- Helper: Encode categorical inputs to match training ---
 def encode_inputs(df, model_features):
@@ -105,7 +105,7 @@ attrition_features = ['Age', 'BusinessTravel', 'Department', 'DistanceFromHome',
 performance_features = ['Age', 'BusinessTravel', 'Department', 'DistanceFromHome', 'Education',
                          'EducationField', 'EnvironmentSatisfaction', 'Gender', 'JobInvolvement',
                          'JobLevel', 'JobRole', 'JobSatisfaction', 'MaritalStatus', 'MonthlyIncome',
-                         'NumCompaniesWorked', 'OverTime', 'PerformanceRating', 'RelationshipSatisfaction',
+                         'NumCompaniesWorked', 'OverTime', 'RelationshipSatisfaction',
                          'StockOptionLevel', 'TotalWorkingYears', 'WorkLifeBalance', 'YearsAtCompany',
                          'YearsInCurrentRole', 'YearsWithCurrManager']
 
@@ -118,7 +118,8 @@ if section == "Attrition Prediction":
             if key in ['Age', 'DistanceFromHome', 'MonthlyIncome', 'NumCompaniesWorked', 'TotalWorkingYears', 'YearsAtCompany', 'YearsInCurrentRole', 'YearsWithCurrManager']:
                 attrition_inputs[key] = st.slider(key, 0, 60, 30)
             elif key in ['Education', 'EnvironmentSatisfaction', 'JobInvolvement', 'JobLevel', 'JobSatisfaction', 'PerformanceRating', 'RelationshipSatisfaction', 'StockOptionLevel', 'WorkLifeBalance']:
-                attrition_inputs[key] = st.slider(key, 1, 5, 3)
+                stars = st.slider(f"{key} (⭐ 1-5)", 1, 5, 3)
+                attrition_inputs[key] = stars
             else:
                 attrition_inputs[key] = st.selectbox(key, ['Non-Travel', 'Travel_Rarely', 'Travel_Frequently'] if key == 'BusinessTravel' else
                                                      ['Sales', 'Research & Development', 'Human Resources'] if key == 'Department' else
@@ -155,8 +156,9 @@ elif section == "Performance Analysis":
         for key in performance_features:
             if key in ['Age', 'DistanceFromHome', 'MonthlyIncome', 'NumCompaniesWorked', 'TotalWorkingYears', 'YearsAtCompany', 'YearsInCurrentRole', 'YearsWithCurrManager']:
                 perf_inputs[key] = st.slider(key, 0, 60, 30)
-            elif key in ['Education', 'EnvironmentSatisfaction', 'JobInvolvement', 'JobLevel', 'JobSatisfaction', 'PerformanceRating', 'RelationshipSatisfaction', 'StockOptionLevel', 'WorkLifeBalance']:
-                perf_inputs[key] = st.slider(key, 1, 5, 3)
+            elif key in ['Education', 'EnvironmentSatisfaction', 'JobInvolvement', 'JobLevel', 'JobSatisfaction', 'RelationshipSatisfaction', 'StockOptionLevel', 'WorkLifeBalance']:
+                stars = st.slider(f"{key} (⭐ 1-5)", 1, 5, 3)
+                perf_inputs[key] = stars
             else:
                 perf_inputs[key] = st.selectbox(key, ['Non-Travel', 'Travel_Rarely', 'Travel_Frequently'] if key == 'BusinessTravel' else
                                                  ['Sales', 'Research & Development', 'Human Resources'] if key == 'Department' else
@@ -173,13 +175,14 @@ elif section == "Performance Analysis":
         with st.spinner("Analyzing..."):
             input_data = pd.DataFrame([perf_inputs])
             try:
-                input_encoded = encode_inputs(input_data, performance_features)
+                model_features = getattr(reg, 'feature_names_in_', input_data.columns)
+                input_encoded = encode_inputs(input_data, model_features)
                 performance = reg.predict(input_encoded)[0]
                 stars = "⭐" * round(performance)
                 if show_proba:
-                    st.markdown(f"## {stars} ({performance:.2f} / 5) — Confidence not available for regression")
+                    st.markdown(f"## {stars} ({performance:} / 5) ")
                 else:
-                    st.markdown(f"## {stars} ({performance:.2f} / 5)")
+                    st.markdown(f"## {stars} ({performance:} / 5)")
                 st.markdown("#### AI-Powered Rating Predictor")
             except Exception as e:
                 st.error(f"Performance prediction failed: {e}")
@@ -201,27 +204,18 @@ elif section == "Visualize Trends":
         numeric_columns = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
         categorical_columns = df.select_dtypes(include=['object']).columns.tolist()
 
-        col1, col2 = st.columns(2)
+        st.markdown("#### 📌 Trend Visualization Options")
+        chart_type = st.selectbox("Choose a chart type", ["Histogram", "Box Plot", "Scatter Plot"])
 
-        with col1:
-            if numeric_columns:
-                selected_num_col = st.selectbox("Select a Numeric Column to Visualize", numeric_columns)
-                if df[selected_num_col].dropna().empty:
-                    st.warning(f"The column '{selected_num_col}' contains no valid numeric data.")
-                else:
-                    st.plotly_chart(px.histogram(df, x=selected_num_col, nbins=30, title=f"Distribution of {selected_num_col}"))
-            else:
-                st.warning("No numeric columns found.")
+        x_col = st.selectbox("X-axis", df.columns)
+        y_col = st.selectbox("Y-axis (optional, for box/scatter)", ["None"] + numeric_columns)
 
-        with col2:
-            if categorical_columns:
-                selected_cat_col = st.selectbox("Select a Categorical Column to Visualize", categorical_columns)
-                if df[selected_cat_col].dropna().empty:
-                    st.warning(f"The column '{selected_cat_col}' contains no valid categorical data.")
-                else:
-                    st.plotly_chart(px.histogram(df, x=selected_cat_col, title=f"Count of {selected_cat_col}"))
-            else:
-                st.warning("No categorical columns found.")
+        if chart_type == "Histogram":
+            st.plotly_chart(px.histogram(df, x=x_col, nbins=30, title=f"Distribution of {x_col}"))
+        elif chart_type == "Box Plot" and y_col != "None":
+            st.plotly_chart(px.box(df, x=x_col, y=y_col, title=f"Box Plot of {y_col} by {x_col}"))
+        elif chart_type == "Scatter Plot" and y_col != "None":
+            st.plotly_chart(px.scatter(df, x=x_col, y=y_col, color=x_col, title=f"Scatter Plot of {y_col} vs {x_col}"))
 
 # --- Footer ---
 st.markdown("""
