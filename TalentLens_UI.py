@@ -195,7 +195,7 @@ elif section == "Performance Analysis":
 
 elif section == "Visualize Trends":
     st.subheader("📊 Visualize Trends")
-    csv_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/HR_Dataset.csv"
+    csv_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/blob/main/HR_Dataset.csv"
     local_path = "hr_dataset.csv"
 
     try:
