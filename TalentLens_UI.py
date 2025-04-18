@@ -5,7 +5,6 @@ from PIL import Image
 from io import BytesIO
 import requests
 import plotly.express as px
-import plotly.figure_factory as ff
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,6 +17,13 @@ logo_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See
 response = requests.get(logo_url)
 logo = Image.open(BytesIO(response.content))
 
+# --- Page configuration ---
+st.set_page_config(
+    page_title="Talent Lens",
+    layout="wide",
+    page_icon=logo
+)
+
 # --- Load models safely ---
 try:
     clf = pickle.load(open("classifier_model.pkl", "rb"))
@@ -25,13 +31,6 @@ try:
 except FileNotFoundError as e:
     st.error(f"Model loading failed: {e}")
     st.stop()
-
-# --- Page configuration ---
-st.set_page_config(
-    page_title="Talent Lens",
-    layout="wide",
-    page_icon="📊"
-)
 
 # --- Custom styling ---
 st.markdown("""
@@ -65,31 +64,60 @@ st.markdown("""
         footer {
             visibility: hidden;
         }
+        .sidebar-container {
+            background-color: #f5f0ff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .sidebar-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6a0dad;
+        }
+        .sidebar-subtitle {
+            font-size: 16px;
+            color: #555;
+        }
+        .custom-radio label {
+            display: block;
+            margin-bottom: 8px;
+            background-color: #eee;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .custom-radio input:checked + label {
+            background-color: #6a0dad;
+            color: white;
+        }
     </style>
 """, unsafe_allow_html=True)
 
 # --- Sidebar ---
-st.sidebar.image(logo, width=150)
-st.sidebar.title("Talent Lens")
-st.sidebar.markdown("See Beyond the Resume")
-st.sidebar.markdown("Empowering HR with smart insights into employee attrition and performance.")
+with st.sidebar:
+    st.image(logo, width=150)
+    st.markdown("<div class='sidebar-container'>", unsafe_allow_html=True)
+    st.markdown("<div class='sidebar-title'>Talent Lens</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sidebar-subtitle'>See Beyond the Resume</div>", unsafe_allow_html=True)
+    st.markdown("Empowering HR with smart insights into employee attrition and performance.")
 
-# Time-based greeting
-hour = datetime.now().hour
-greeting = "🌞 Good Morning" if hour < 12 else "🌇 Good Evening" if hour > 17 else "🌤 Good Afternoon"
-st.sidebar.markdown(f"### {greeting}, HR 👋")
+    # Time-based greeting
+    hour = datetime.now().hour
+    greeting = "🌞 Good Morning" if hour < 12 else "🌇 Good Evening" if hour > 17 else "🌤 Good Afternoon"
+    st.markdown(f"### {greeting}, HR 👋")
 
-# Advanced settings
-with st.sidebar.expander("⚙️ Advanced Settings"):
-    normalize = st.checkbox("Normalize Inputs")
-    show_proba = st.checkbox("Show Prediction Confidence")
-    use_top_features = st.checkbox("Use Only Top 10 Features")
+    # Advanced settings
+    with st.expander("⚙️ Advanced Settings"):
+        normalize = st.checkbox("Normalize Inputs")
+        show_proba = st.checkbox("Show Prediction Confidence")
+        use_top_features = st.checkbox("Use Only Top 10 Features")
 
-# Mini leaderboard
-st.sidebar.markdown("### 🏆 Top Departments (Performance)")
-st.sidebar.markdown("- R&D: ⭐ 4.5\n- Sales: ⭐ 4.3\n- HR: ⭐ 4.1")
+    # Mini leaderboard
+    st.markdown("### 🏆 Top Departments (Performance)")
+    st.markdown("- R&D: ⭐ 4.5\n- Sales: ⭐ 4.3\n- HR: ⭐ 4.1")
 
-section = st.sidebar.radio("Navigate", ["Attrition Prediction", "Performance Analysis", "Visualize Trends"])
+    section = st.radio("Navigate", ["Attrition Prediction", "Performance Analysis", "Visualize Trends"])
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Helper: Encode categorical inputs to match training ---
 def encode_inputs(df, model_features):
@@ -222,11 +250,6 @@ elif section == "Visualize Trends":
             st.plotly_chart(px.histogram(df, x="Gender", color="Attrition", barmode="group", title="Attrition Rate by Gender"))
             st.plotly_chart(px.bar(df.groupby("JobRole")[["PerformanceRating"]].mean().reset_index(), x="JobRole", y="PerformanceRating", title="Top Performing Job Roles"))
             st.plotly_chart(px.scatter(df, x="MonthlyIncome", y="PerformanceRating", color="JobRole", title="Monthly Income vs Performance Rating"))
-            st.subheader("Correlation Heatmap")
-            corr = df.corr(numeric_only=True)
-            fig, ax = plt.subplots(figsize=(12, 8))
-            sns.heatmap(corr, cmap="coolwarm", annot=False, ax=ax)
-            st.pyplot(fig)
 
         except Exception as e:
             st.error(f"Error loading dataset: {e}")
@@ -236,3 +259,9 @@ st.markdown("""
 <hr>
 <p style='text-align: center; font-size: 14px;'>Built with ❤️ by Team Talent Lens | <a href='https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume' target='_blank'>GitHub Repo</a></p>
 """, unsafe_allow_html=True)
+
+# --- Extra Section ---
+st.markdown("---")
+st.markdown("### 💡 Why Talent Lens?")
+st.markdown("Talent Lens helps HR teams go beyond traditional metrics to understand the true potential and risk of their workforce. Predictive models, visual trends, and automated insights—all at your fingertips.")
+
