@@ -198,22 +198,6 @@ elif section == "Performance Analysis":
         performance = reg.predict(input_encoded)[0]
 
         st.markdown("### Predicted Performance Rating")
-        gauge = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=performance,
-            title={'text': "Performance Rating", 'font': {'size': 24}},
-            gauge={
-                'axis': {'range': [0, 5], 'tickwidth': 1, 'tickcolor': "darkgray"},
-                'bar': {'color': "green"},
-                'bgcolor': "white",
-                'borderwidth': 2,
-                'bordercolor': "gray",
-                'steps': [
-                    {'range': [0, 2], 'color': '#ffcccc'},
-                    {'range': [2, 3], 'color': '#ffe0b3'},
-                    {'range': [3, 5], 'color': '#ccffcc'}
-                ]
-            }
-        ))
-        st.plotly_chart(gauge)
+        stars = "⭐" * round(performance)
+        st.markdown(f"## {stars} ({performance:.2f} / 5)")
         st.markdown("#### AI-Powered Rating Predictor")
