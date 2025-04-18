@@ -5,6 +5,10 @@ from PIL import Image
 from io import BytesIO
 import requests
 import plotly.express as px
+import plotly.figure_factory as ff
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from datetime import datetime
 
@@ -190,9 +194,7 @@ elif section == "Performance Analysis":
 
 elif section == "Visualize Trends":
     st.subheader("📊 Visualize Trends")
-    st.markdown("Explore trends in employee data from GitHub-hosted dataset.")
-
-    csv_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/HR_Dataset.csv"
+    csv_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/hr_dataset.csv"
     df = pd.read_csv(csv_url)
 
     st.write("### Preview of Data")
@@ -204,18 +206,17 @@ elif section == "Visualize Trends":
     numeric_columns = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
     categorical_columns = df.select_dtypes(include=['object']).columns.tolist()
 
-    st.markdown("#### 📌 Trend Visualization Options")
-    chart_type = st.selectbox("Choose a chart type", ["Histogram", "Box Plot", "Scatter Plot"])
+    st.markdown("---")
+    st.markdown("### 📌 Automatic Data Visualizations")
 
-    x_col = st.selectbox("X-axis", df.columns)
-    y_col = st.selectbox("Y-axis (optional, for box/scatter)", ["None"] + numeric_columns)
-
-    if chart_type == "Histogram":
-        st.plotly_chart(px.histogram(df, x=x_col, nbins=30, title=f"Distribution of {x_col}"))
-    elif chart_type == "Box Plot" and y_col != "None":
-        st.plotly_chart(px.box(df, x=x_col, y=y_col, title=f"Box Plot of {y_col} by {x_col}"))
-    elif chart_type == "Scatter Plot" and y_col != "None":
-        st.plotly_chart(px.scatter(df, x=x_col, y=y_col, color=x_col, title=f"Scatter Plot of {y_col} vs {x_col}"))
+    st.plotly_chart(px.histogram(df, x="MonthlyIncome", nbins=30, title="Distribution of Monthly Income"))
+    st.plotly_chart(px.box(df, x="JobRole", y="MonthlyIncome", title="Monthly Income by Job Role"))
+    st.plotly_chart(px.scatter(df, x="TotalWorkingYears", y="MonthlyIncome", color="JobRole", title="Total Working Years vs Monthly Income"))
+    st.plotly_chart(px.bar(df, x="Department", title="Number of Employees by Department"))
+    st.plotly_chart(px.pie(df, names="Gender", title="Gender Distribution"))
+    st.plotly_chart(px.box(df, x="EducationField", y="TotalWorkingYears", title="Working Years by Education Field"))
+    st.plotly_chart(px.histogram(df, x="JobSatisfaction", color="Attrition", barmode="group", title="Attrition vs Job Satisfaction"))
+    st.plotly_chart(px.histogram(df, x="WorkLifeBalance", color="Attrition", barmode="group", title="Attrition vs Work-Life Balance"))
 
 # --- Footer ---
 st.markdown("""
