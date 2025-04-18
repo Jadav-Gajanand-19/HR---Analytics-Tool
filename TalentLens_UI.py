@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from datetime import datetime
+import os
 
 # --- Load logo from GitHub (raw image link) ---
 logo_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/TalenLens%20Logo.png"
@@ -194,8 +195,17 @@ elif section == "Performance Analysis":
 
 elif section == "Visualize Trends":
     st.subheader("📊 Visualize Trends")
-    csv_url = "https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/blob/main/HR_Dataset.csv"
-    df = pd.read_csv(csv_url)
+    csv_url = "https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/edit/main/HR_Dataset.csv"
+    local_path = "hr_dataset.csv"
+
+    try:
+        response = requests.get(csv_url)
+        with open(local_path, "wb") as f:
+            f.write(response.content)
+        df = pd.read_csv(local_path)
+    except Exception as e:
+        st.error(f"Error loading dataset: {e}")
+        st.stop()
 
     st.write("### Preview of Data")
     st.dataframe(df.head())
