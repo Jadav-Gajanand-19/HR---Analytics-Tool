@@ -194,7 +194,7 @@ elif section == "Performance Analysis":
 
 elif section == "Visualize Trends":
     st.subheader("📊 Visualize Trends")
-    csv_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/hr_dataset.csv"
+    csv_url = "https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/blob/main/HR_Dataset.csv"
     df = pd.read_csv(csv_url)
 
     st.write("### Preview of Data")
