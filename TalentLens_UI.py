@@ -5,18 +5,26 @@ from PIL import Image
 from io import BytesIO
 import requests
 import plotly.express as px
-import plotly.figure_factory as ff
-import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
-from sklearn.preprocessing import OneHotEncoder
 from datetime import datetime
 import os
+import numpy as np
 
 # --- Load logo from GitHub (raw image link) ---
+@st.cache_data
+def load_logo(url):
+    response = requests.get(url)
+    return Image.open(BytesIO(response.content))
+
 logo_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/TalenLens%20Logo.png"
-response = requests.get(logo_url)
-logo = Image.open(BytesIO(response.content))
+logo = load_logo(logo_url)
+
+# --- Page configuration ---
+st.set_page_config(
+    page_title="Talent Lens",
+    layout="wide",
+    page_icon=logo
+)
 
 # --- Load models safely ---
 try:
@@ -26,18 +34,15 @@ except FileNotFoundError as e:
     st.error(f"Model loading failed: {e}")
     st.stop()
 
-# --- Page configuration ---
-st.set_page_config(
-    page_title="Talent Lens",
-    layout="wide",
-    page_icon="📊"
-)
-
 # --- Custom styling ---
 st.markdown("""
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+        html, body, [class*="css"]  {
+            font-family: 'Poppins', sans-serif;
+        }
         .stApp {
-            background-color: white;
+            background-color: #f8f9fa;
         }
         .title-section {
             text-align: center;
@@ -84,155 +89,185 @@ with st.sidebar.expander("⚙️ Advanced Settings"):
     normalize = st.checkbox("Normalize Inputs")
     show_proba = st.checkbox("Show Prediction Confidence")
     use_top_features = st.checkbox("Use Only Top 10 Features")
+    show_confidence = st.checkbox("Display Confidence %")
+
+# Export section
+st.sidebar.markdown("### 📄 Export Predictions")
+if "attrition_predictions" in st.session_state and not st.session_state["attrition_predictions"].empty:
+    st.sidebar.download_button(
+        "Download Attrition Predictions",
+        data=st.session_state["attrition_predictions"].to_csv(index=False).encode(),
+        file_name="attrition_predictions.csv",
+        mime="text/csv"
+    )
+if "performance_predictions" in st.session_state and not st.session_state["performance_predictions"].empty:
+    st.sidebar.download_button(
+        "Download Performance Predictions",
+        data=st.session_state["performance_predictions"].to_csv(index=False).encode(),
+        file_name="performance_predictions.csv",
+        mime="text/csv"
+    )
 
 # Mini leaderboard
 st.sidebar.markdown("### 🏆 Top Departments (Performance)")
 st.sidebar.markdown("- R&D: ⭐ 4.5\n- Sales: ⭐ 4.3\n- HR: ⭐ 4.1")
 
-section = st.sidebar.radio("Navigate", ["Attrition Prediction", "Performance Analysis", "Visualize Trends"])
+# Help section
+st.sidebar.markdown("### 📘 How to Use Talent Lens")
+st.sidebar.markdown("""
+**1. Attrition Prediction**  
+➡️ Enter employee details to check the likelihood of them leaving.  
+➡️ Use confidence toggle for prediction probability.  
 
-# --- Helper: Encode categorical inputs to match training ---
-def encode_inputs(df, model_features):
-    df_encoded = pd.get_dummies(df)
-    df_encoded = df_encoded[[col for col in df_encoded.columns if col in model_features]]
-    for col in model_features:
-        if col not in df_encoded:
-            df_encoded[col] = 0
-    return df_encoded[model_features]
+**2. Performance Analysis**  
+➡️ Predict future performance rating based on key HR metrics.  
 
-# Feature columns for each model
-attrition_features = ['Age', 'BusinessTravel', 'Department', 'DistanceFromHome', 'Education',
-                      'EducationField', 'EnvironmentSatisfaction', 'Gender', 'JobInvolvement',
-                      'JobLevel', 'JobRole', 'JobSatisfaction', 'MaritalStatus', 'MonthlyIncome',
-                      'NumCompaniesWorked', 'OverTime', 'PerformanceRating', 'RelationshipSatisfaction',
-                      'StockOptionLevel', 'TotalWorkingYears', 'WorkLifeBalance', 'YearsAtCompany',
-                      'YearsInCurrentRole', 'YearsWithCurrManager']
+**3. Visualize Trends**  
+➡️ Upload your HR CSV to view patterns in income, attrition, and performance.  
+➡️ Explore charts to gain actionable insights.  
 
-performance_features = ['Age', 'BusinessTravel', 'Department', 'DistanceFromHome', 'Education',
-                         'EducationField', 'EnvironmentSatisfaction', 'Gender', 'JobInvolvement',
-                         'JobLevel', 'JobRole', 'JobSatisfaction', 'MaritalStatus', 'MonthlyIncome',
-                         'NumCompaniesWorked', 'OverTime', 'RelationshipSatisfaction',
-                         'StockOptionLevel', 'TotalWorkingYears', 'WorkLifeBalance', 'YearsAtCompany',
-                         'YearsInCurrentRole', 'YearsWithCurrManager']
+**💾 Tip:** Use the export buttons to save predictions for your records.
+""")
 
-if section == "Attrition Prediction":
-    st.subheader("👥 Predict Employee Attrition")
-    with st.form("attrition_form"):
-        st.markdown("#### Enter Employee Details")
-        attrition_inputs = {}
-        for key in attrition_features:
-            if key in ['Age', 'DistanceFromHome', 'MonthlyIncome', 'NumCompaniesWorked', 'TotalWorkingYears', 'YearsAtCompany', 'YearsInCurrentRole', 'YearsWithCurrManager']:
-                attrition_inputs[key] = st.slider(key, 0, 60, 30)
-            elif key in ['Education', 'EnvironmentSatisfaction', 'JobInvolvement', 'JobLevel', 'JobSatisfaction', 'PerformanceRating', 'RelationshipSatisfaction', 'StockOptionLevel', 'WorkLifeBalance']:
-                stars = st.slider(f"{key} (⭐ 1-5)", 1, 5, 3)
-                attrition_inputs[key] = stars
-            else:
-                attrition_inputs[key] = st.selectbox(key, ['Non-Travel', 'Travel_Rarely', 'Travel_Frequently'] if key == 'BusinessTravel' else
-                                                     ['Sales', 'Research & Development', 'Human Resources'] if key == 'Department' else
-                                                     ['Life Sciences', 'Medical', 'Marketing', 'Technical Degree', 'Human Resources', 'Other'] if key == 'EducationField' else
-                                                     ['Male', 'Female'] if key == 'Gender' else
-                                                     ['Single', 'Married', 'Divorced'] if key == 'MaritalStatus' else
-                                                     ['Yes', 'No'] if key == 'OverTime' else
-                                                     ['Sales Executive', 'Research Scientist', 'Laboratory Technician', 'Manufacturing Director',
-                                                      'Healthcare Representative', 'Manager', 'Sales Representative', 'Research Director', 'Human Resources'])
-        submitted1 = st.form_submit_button("Predict Attrition")
+# --- Navigation ---
+section = st.sidebar.radio("Navigate", ["Attrition Prediction", "Performance Analysis", "Visualize Trends", "Upload & Predict Batch"])
 
-    if submitted1:
-        with st.spinner("Analyzing..."):
-            input_data = pd.DataFrame([attrition_inputs])
-            try:
-                model_features = getattr(clf, 'feature_names_in_', input_data.columns)
-                input_encoded = encode_inputs(input_data, model_features)
-                prediction = clf.predict(input_encoded)[0]
-                prediction_label = "Yes" if prediction == 1 else "No"
-                if show_proba:
-                    proba = clf.predict_proba(input_encoded)[0][1] * 100 if prediction == 1 else clf.predict_proba(input_encoded)[0][0] * 100
-                    st.success(f"Attrition Prediction: {prediction_label} ({proba:.2f}% confidence)")
-                else:
-                    st.success(f"Attrition Prediction: {prediction_label}")
-            except Exception as e:
-                st.error(f"Prediction failed: {e}")
-
-elif section == "Performance Analysis":
-    st.subheader("📈 Performance Rating Predictor")
-    st.markdown("#### Enter Employee Metrics for Performance Analysis")
-
-    with st.form("performance_form"):
-        perf_inputs = {}
-        for key in performance_features:
-            if key in ['Age', 'DistanceFromHome', 'MonthlyIncome', 'NumCompaniesWorked', 'TotalWorkingYears', 'YearsAtCompany', 'YearsInCurrentRole', 'YearsWithCurrManager']:
-                perf_inputs[key] = st.slider(key, 0, 60, 30)
-            elif key in ['Education', 'EnvironmentSatisfaction', 'JobInvolvement', 'JobLevel', 'JobSatisfaction', 'RelationshipSatisfaction', 'StockOptionLevel', 'WorkLifeBalance']:
-                stars = st.slider(f"{key} (⭐ 1-5)", 1, 5, 3)
-                perf_inputs[key] = stars
-            else:
-                perf_inputs[key] = st.selectbox(key, ['Non-Travel', 'Travel_Rarely', 'Travel_Frequently'] if key == 'BusinessTravel' else
-                                                 ['Sales', 'Research & Development', 'Human Resources'] if key == 'Department' else
-                                                 ['Life Sciences', 'Medical', 'Marketing', 'Technical Degree', 'Human Resources', 'Other'] if key == 'EducationField' else
-                                                 ['Male', 'Female'] if key == 'Gender' else
-                                                 ['Single', 'Married', 'Divorced'] if key == 'MaritalStatus' else
-                                                 ['Yes', 'No'] if key == 'OverTime' else
-                                                 ['Sales Executive', 'Research Scientist', 'Laboratory Technician', 'Manufacturing Director',
-                                                  'Healthcare Representative', 'Manager', 'Sales Representative', 'Research Director', 'Human Resources'])
-
-        submitted2 = st.form_submit_button("Predict Performance")
-
-    if submitted2:
-        with st.spinner("Analyzing..."):
-            input_data = pd.DataFrame([perf_inputs])
-            try:
-                model_features = getattr(reg, 'feature_names_in_', input_data.columns)
-                input_encoded = encode_inputs(input_data, model_features)
-                performance = reg.predict(input_encoded)[0]
-                stars = "⭐" * round(performance)
-                if show_proba:
-                    st.markdown(f"## {stars} ({performance:} / 5) ")
-                else:
-                    st.markdown(f"## {stars} ({performance:} / 5)")
-                st.markdown("#### AI-Powered Rating Predictor")
-            except Exception as e:
-                st.error(f"Performance prediction failed: {e}")
-
-elif section == "Visualize Trends":
-    st.subheader("📊 Visualize Trends")
-    uploaded_file = st.file_uploader("Upload your HR dataset (CSV format)", type=["csv"])
-
-    if uploaded_file:
+# --- HR Data Visualization ---
+if section == "Visualize Trends":
+    st.title("📊 HR Data Visualization")
+    uploaded_file = st.file_uploader("Upload your HR Dataset CSV", type=["csv"])
+    if uploaded_file is not None:
         try:
             df = pd.read_csv(uploaded_file)
+            st.success("File uploaded successfully!")
 
-            st.write("### Preview of Data")
-            st.dataframe(df.head())
+            st.subheader("Attrition Distribution")
+            fig1 = px.histogram(df, x="Attrition", color="Attrition", title="Attrition Count")
+            st.plotly_chart(fig1, use_container_width=True)
 
-            for col in df.columns:
-                df[col] = pd.to_numeric(df[col], errors='ignore')
+            st.subheader("Monthly Income by Department")
+            fig2 = px.box(df, x="Department", y="MonthlyIncome", color="Department", title="Monthly Income by Department")
+            st.plotly_chart(fig2, use_container_width=True)
 
-            st.markdown("---")
-            st.markdown("### 📌 Automatic Data Visualizations")
+            st.subheader("Average Performance by Job Role")
+            fig3 = px.bar(df.groupby("JobRole")["PerformanceRating"].mean().reset_index(), x="JobRole", y="PerformanceRating", title="Performance by Job Role")
+            st.plotly_chart(fig3, use_container_width=True)
 
-            st.plotly_chart(px.histogram(df, x="MonthlyIncome", nbins=30, title="Distribution of Monthly Income"))
-            st.plotly_chart(px.box(df, x="JobRole", y="MonthlyIncome", title="Monthly Income by Job Role"))
-            st.plotly_chart(px.scatter(df, x="TotalWorkingYears", y="MonthlyIncome", color="JobRole", title="Total Working Years vs Monthly Income"))
-            st.plotly_chart(px.bar(df, x="Department", title="Number of Employees by Department"))
-            st.plotly_chart(px.pie(df, names="Gender", title="Gender Distribution"))
-            st.plotly_chart(px.box(df, x="EducationField", y="TotalWorkingYears", title="Working Years by Education Field"))
-            st.plotly_chart(px.histogram(df, x="JobSatisfaction", color="Attrition", barmode="group", title="Attrition vs Job Satisfaction"))
-            st.plotly_chart(px.histogram(df, x="WorkLifeBalance", color="Attrition", barmode="group", title="Attrition vs Work-Life Balance"))
-            st.plotly_chart(px.histogram(df, x="Department", color="Attrition", barmode="group", title="Attrition Rate by Department"))
-            st.plotly_chart(px.histogram(df, x="Gender", color="Attrition", barmode="group", title="Attrition Rate by Gender"))
-            st.plotly_chart(px.bar(df.groupby("JobRole")[["PerformanceRating"]].mean().reset_index(), x="JobRole", y="PerformanceRating", title="Top Performing Job Roles"))
-            st.plotly_chart(px.scatter(df, x="MonthlyIncome", y="PerformanceRating", color="JobRole", title="Monthly Income vs Performance Rating"))
-            st.subheader("Correlation Heatmap")
-            corr = df.corr(numeric_only=True)
-            fig, ax = plt.subplots(figsize=(12, 8))
-            sns.heatmap(corr, cmap="coolwarm", annot=False, ax=ax)
-            st.pyplot(fig)
+            st.subheader("Job Satisfaction vs. Environment Satisfaction")
+            fig4 = px.scatter(df, x="JobSatisfaction", y="EnvironmentSatisfaction", color="Attrition", title="Satisfaction Comparison")
+            st.plotly_chart(fig4, use_container_width=True)
 
         except Exception as e:
             st.error(f"Error loading dataset: {e}")
 
-# --- Footer ---
-st.markdown("""
-<hr>
-<p style='text-align: center; font-size: 14px;'>Built with ❤️ by Team Talent Lens | <a href='https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume' target='_blank'>GitHub Repo</a></p>
-""", unsafe_allow_html=True)
+# --- Attrition Prediction ---
+if section == "Attrition Prediction":
+    st.title("🔢 Attrition Prediction")
+    st.markdown("Fill in employee details below to predict attrition likelihood.")
+
+    age = st.slider("Age", 18, 60, 30)
+    years_at_company = st.slider("Years at Company", 0, 40, 5)
+    job_satisfaction = st.slider("Job Satisfaction", 1, 4, 3)
+    over_time = st.selectbox("OverTime", ["Yes", "No"])
+    distance_from_home = st.slider("Distance from Home (km)", 1, 30, 5)
+    monthly_income = st.number_input("Monthly Income", min_value=1000, value=5000)
+
+    if st.button("Predict Attrition"):
+        input_data = pd.DataFrame([{
+            "Age": age,
+            "YearsAtCompany": years_at_company,
+            "JobSatisfaction": job_satisfaction,
+            "OverTime": 1 if over_time == "Yes" else 0,
+            "DistanceFromHome": distance_from_home,
+            "MonthlyIncome": monthly_income
+        }])
+
+        if normalize:
+            input_data = (input_data - input_data.mean()) / input_data.std()
+
+        prediction = clf.predict(input_data)[0]
+        proba = clf.predict_proba(input_data)[0][1]
+
+        result = "Yes 🚫" if prediction == 1 else "No 🚀"
+        st.metric("Attrition Prediction", result)
+        if show_confidence:
+            st.metric("Confidence", f"{proba*100:.2f}%")
+
+        st.session_state["attrition_predictions"] = input_data.copy()
+        st.session_state["attrition_predictions"]["Prediction"] = result
+        if show_confidence:
+            st.session_state["attrition_predictions"]["Confidence"] = f"{proba*100:.2f}%"
+
+# --- Performance Analysis ---
+if section == "Performance Analysis":
+    st.title("🏋️ Performance Analysis")
+    st.markdown("Predict future employee performance rating.")
+
+    age = st.slider("Age", 18, 60, 30, key="age_perf")
+    training_times = st.slider("Training Times Last Year", 0, 6, 2)
+    years_since_last_promotion = st.slider("Years Since Last Promotion", 0, 15, 3)
+    work_life_balance = st.slider("Work Life Balance (1-4)", 1, 4, 3)
+    years_in_current_role = st.slider("Years in Current Role", 0, 18, 4)
+
+    if st.button("Predict Performance"):
+        perf_input = pd.DataFrame([{
+            "Age": age,
+            "TrainingTimesLastYear": training_times,
+            "YearsSinceLastPromotion": years_since_last_promotion,
+            "WorkLifeBalance": work_life_balance,
+            "YearsInCurrentRole": years_in_current_role
+        }])
+
+        if normalize:
+            perf_input = (perf_input - perf_input.mean()) / perf_input.std()
+
+        perf_rating = reg.predict(perf_input)[0]
+        st.metric("Predicted Performance Rating", f"{perf_rating:.2f} / 5")
+
+        st.session_state["performance_predictions"] = perf_input.copy()
+        st.session_state["performance_predictions"]["Predicted Rating"] = perf_rating
+
+# --- Batch Prediction ---
+if section == "Upload & Predict Batch":
+    st.title("📁 Batch Prediction")
+    st.markdown("Upload a CSV to predict attrition and performance for multiple employees.")
+
+    uploaded_file = st.file_uploader("Upload Batch CSV", type=["csv"], key="batch_upload")
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        st.write("### Uploaded Data", df.head())
+
+        try:
+            if use_top_features:
+                attrition_cols = ["Age", "YearsAtCompany", "JobSatisfaction", "OverTime", "DistanceFromHome", "MonthlyIncome"]
+                df_attrition = df[attrition_cols].copy()
+                df_attrition["OverTime"] = df_attrition["OverTime"].apply(lambda x: 1 if x == "Yes" else 0)
+            else:
+                df_attrition = df.copy()
+
+            if normalize:
+                df_attrition = (df_attrition - df_attrition.mean()) / df_attrition.std()
+
+            df["AttritionPrediction"] = clf.predict(df_attrition)
+            df["AttritionPrediction"] = df["AttritionPrediction"].map({0: "No", 1: "Yes"})
+            if show_proba:
+                df["AttritionConfidence"] = clf.predict_proba(df_attrition)[:, 1]
+
+            perf_cols = ["Age", "TrainingTimesLastYear", "YearsSinceLastPromotion", "WorkLifeBalance", "YearsInCurrentRole"]
+            df_perf = df[perf_cols].copy()
+            if normalize:
+                df_perf = (df_perf - df_perf.mean()) / df_perf.std()
+
+            df["PerformancePrediction"] = reg.predict(df_perf)
+
+            st.write("### Predictions", df[["AttritionPrediction", "PerformancePrediction"] + (["AttritionConfidence"] if show_proba else [])])
+
+            st.download_button(
+                "Download Full Prediction Results",
+                data=df.to_csv(index=False).encode(),
+                file_name="batch_predictions.csv",
+                mime="text/csv"
+            )
+
+        except Exception as e:
+            st.error(f"Prediction failed: {e}")
