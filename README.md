@@ -1,103 +1,107 @@
+# Talent Lens – See Beyond the Resume 👁️‍🗨️
 
-Talent Lens – See Beyond the Resume 👁️‍🗨️
-Welcome to Talent Lens, a smart HR analytics dashboard designed to help you predict employee attrition, evaluate performance, and visualize trends from your workforce data—all in one place.
+Welcome to **Talent Lens**, a smart HR analytics dashboard designed to help you predict employee **attrition**, evaluate **performance**, and **visualize trends** from your workforce data—all in one place.
 
+![Logo](https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/TalenLens%20Logo.png)
 
+---
 
-🚀 Features
-🎯 Attrition Prediction
-Input employee details to predict whether they are at risk of leaving.
+## 🚀 Features
 
-Optionally view the confidence level of the prediction.
+### 🎯 Attrition Prediction
+- Input employee details to predict whether they are at risk of leaving.
+- Optionally view the confidence level of the prediction.
+- Supports normalized inputs and top feature selection.
 
-Supports normalized inputs and top feature selection.
+### 🌟 Performance Analysis
+- Predict an employee’s **performance rating** on a 5-star scale.
+- Input role, department, experience, satisfaction, and more.
+- Great for performance review preparation and workforce optimization.
 
-🌟 Performance Analysis
-Predict an employee’s performance rating on a 5-star scale.
+### 📊 Visualize Trends
+- Upload your own HR dataset (`.csv`) to explore insightful trends.
+- Interactive **Plotly** charts: histograms, box plots, scatter plots, bar charts, pie charts.
+- Understand relationships between income, job roles, attrition, satisfaction, and more.
 
-Input role, department, experience, satisfaction, and more.
+---
 
-Great for performance review preparation and workforce optimization.
+## 🧠 Models Used
 
-📊 Visualize Trends
-Upload your own HR dataset (.csv) to explore insightful trends.
+- **Classifier:** Trained to predict whether an employee is likely to leave.
+- **Regressor:** Trained to estimate employee performance on a scale of 1 to 5.
+- Models are loaded from pickled `.pkl` files.
 
-Interactive Plotly charts: histograms, box plots, scatter plots, bar charts, pie charts.
+---
 
-Understand relationships between income, job roles, attrition, satisfaction, and more.
+## 🛠️ Tech Stack
 
-🧠 Models Used
-Classifier: Trained to predict whether an employee is likely to leave.
+- **Python 3.8+**
+- **Streamlit**
+- **scikit-learn**
+- **Pandas, NumPy**
+- **Plotly, Seaborn, Matplotlib**
+- **Pillow** (Image processing)
+- **Pickle** (for model serialization)
 
-Regressor: Trained to estimate employee performance on a scale of 1 to 5.
+---
 
-Models are loaded from pickled .pkl files.
+## 📂 Project Structure
 
-🛠️ Tech Stack
-Python 3.8+
-
-Streamlit
-
-scikit-learn
-
-Pandas, NumPy
-
-Plotly, Seaborn, Matplotlib
-
-Pillow (Image processing)
-
-Pickle (for model serialization)
-
-📂 Project Structure
-bash
-Copy
-Edit
+```
 📁 TalentLens/
 ├── app.py                     # Main Streamlit app
 ├── classifier_model.pkl       # Trained classifier model
 ├── regression_model.pkl       # Trained regression model
 ├── requirements.txt           # Required Python packages
-📦 Installation & Running
-Clone the repository:
+```
 
-bash
-Copy
-Edit
+---
+
+## 📦 Installation & Running
+
+1. **Clone the repository**:
+```bash
 git clone https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume.git
 cd TalentLens---See-Beyond-Resume
-Install dependencies:
+```
 
-bash
-Copy
-Edit
+2. **Install dependencies**:
+```bash
 pip install -r requirements.txt
-Run the app:
+```
 
-bash
-Copy
-Edit
+3. **Run the app**:
+```bash
 streamlit run app.py
-📈 Sample Dataset
-For the Visualize Trends section, upload a CSV with columns like:
+```
 
-Age, Department, MonthlyIncome, Attrition, JobSatisfaction, WorkLifeBalance, etc.
+---
 
-🎨 UI Highlights
-Responsive layout with dark-text-on-light theme.
+## 📈 Sample Dataset
 
-Custom sidebar with logo, greetings, and leaderboard.
+For the **Visualize Trends** section, upload a CSV with columns like:
+- `Age`, `Department`, `MonthlyIncome`, `Attrition`, `JobSatisfaction`, `WorkLifeBalance`, etc.
 
-Interactive widgets for a personalized experience.
+---
 
-👥 Built For
-HR Analysts
+## 🎨 UI Highlights
 
-Talent Management Teams
+- Responsive layout with dark-text-on-light theme.
+- Custom sidebar with logo, greetings, and leaderboard.
+- Interactive widgets for a personalized experience.
 
-Organizational Leaders
+---
 
-Data-Driven Recruiters
+## 👥 Built For
 
-❤️ Credits
-Built with love by Team Talent Lens
-GitHub Repo: TalentLens - See Beyond the Resume
+- HR Analysts
+- Talent Management Teams
+- Organizational Leaders
+- Data-Driven Recruiters
+
+---
+
+## ❤️ Credits
+
+Built with love by **Team Talent Lens**  
+GitHub Repo: [TalentLens - See Beyond the Resume](https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume)
