@@ -10,6 +10,13 @@ from datetime import datetime
 import os
 import numpy as np
 
+# --- Page configuration must be first ---
+st.set_page_config(
+    page_title="Talent Lens",
+    layout="wide",
+    page_icon="🧠"  # Emoji used for favicon
+)
+
 # --- Load logo from GitHub (raw image link) ---
 @st.cache_data
 def load_logo(url):
@@ -18,13 +25,6 @@ def load_logo(url):
 
 logo_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/TalenLens%20Logo.png"
 logo = load_logo(logo_url)
-
-# --- Page configuration ---
-st.set_page_config(
-    page_title="Talent Lens",
-    layout="wide",
-    page_icon=logo
-)
 
 # --- Load models safely ---
 try:
