@@ -89,6 +89,7 @@ section = st.sidebar.radio("Navigate", ["Attrition Prediction", "Performance Ana
 # --- Helper: Encode categorical inputs to match training ---
 def encode_inputs(df, model_features):
     df_encoded = pd.get_dummies(df)
+    df_encoded = df_encoded[[col for col in df_encoded.columns if col in model_features]]
     for col in model_features:
         if col not in df_encoded:
             df_encoded[col] = 0
@@ -189,33 +190,32 @@ elif section == "Performance Analysis":
 
 elif section == "Visualize Trends":
     st.subheader("📊 Visualize Trends")
-    st.markdown("Upload a dataset to explore trends in employee data.")
-    uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
+    st.markdown("Explore trends in employee data from GitHub-hosted dataset.")
 
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        st.write("### Preview of Uploaded Data")
-        st.dataframe(df.head())
+    csv_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/hr_dataset.csv"
+    df = pd.read_csv(csv_url)
 
-        # Ensure proper types
-        for col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='ignore')
+    st.write("### Preview of Data")
+    st.dataframe(df.head())
 
-        numeric_columns = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
-        categorical_columns = df.select_dtypes(include=['object']).columns.tolist()
+    for col in df.columns:
+        df[col] = pd.to_numeric(df[col], errors='ignore')
 
-        st.markdown("#### 📌 Trend Visualization Options")
-        chart_type = st.selectbox("Choose a chart type", ["Histogram", "Box Plot", "Scatter Plot"])
+    numeric_columns = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
+    categorical_columns = df.select_dtypes(include=['object']).columns.tolist()
 
-        x_col = st.selectbox("X-axis", df.columns)
-        y_col = st.selectbox("Y-axis (optional, for box/scatter)", ["None"] + numeric_columns)
+    st.markdown("#### 📌 Trend Visualization Options")
+    chart_type = st.selectbox("Choose a chart type", ["Histogram", "Box Plot", "Scatter Plot"])
 
-        if chart_type == "Histogram":
-            st.plotly_chart(px.histogram(df, x=x_col, nbins=30, title=f"Distribution of {x_col}"))
-        elif chart_type == "Box Plot" and y_col != "None":
-            st.plotly_chart(px.box(df, x=x_col, y=y_col, title=f"Box Plot of {y_col} by {x_col}"))
-        elif chart_type == "Scatter Plot" and y_col != "None":
-            st.plotly_chart(px.scatter(df, x=x_col, y=y_col, color=x_col, title=f"Scatter Plot of {y_col} vs {x_col}"))
+    x_col = st.selectbox("X-axis", df.columns)
+    y_col = st.selectbox("Y-axis (optional, for box/scatter)", ["None"] + numeric_columns)
+
+    if chart_type == "Histogram":
+        st.plotly_chart(px.histogram(df, x=x_col, nbins=30, title=f"Distribution of {x_col}"))
+    elif chart_type == "Box Plot" and y_col != "None":
+        st.plotly_chart(px.box(df, x=x_col, y=y_col, title=f"Box Plot of {y_col} by {x_col}"))
+    elif chart_type == "Scatter Plot" and y_col != "None":
+        st.plotly_chart(px.scatter(df, x=x_col, y=y_col, color=x_col, title=f"Scatter Plot of {y_col} vs {x_col}"))
 
 # --- Footer ---
 st.markdown("""
