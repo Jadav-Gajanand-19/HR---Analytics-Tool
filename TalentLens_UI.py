@@ -194,7 +194,7 @@ elif section == "Performance Analysis":
 
 elif section == "Visualize Trends":
     st.subheader("📊 Visualize Trends")
-    csv_url = "https://github.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/blob/main/HR_Dataset.csv"
+    csv_url = "https://raw.githubusercontent.com/Jadav-Gajanand-19/TalentLens---See-Beyond-Resume/main/hr_dataset.csv"
     df = pd.read_csv(csv_url)
 
     st.write("### Preview of Data")
@@ -202,9 +202,6 @@ elif section == "Visualize Trends":
 
     for col in df.columns:
         df[col] = pd.to_numeric(df[col], errors='ignore')
-
-    numeric_columns = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
-    categorical_columns = df.select_dtypes(include=['object']).columns.tolist()
 
     st.markdown("---")
     st.markdown("### 📌 Automatic Data Visualizations")
@@ -217,6 +214,15 @@ elif section == "Visualize Trends":
     st.plotly_chart(px.box(df, x="EducationField", y="TotalWorkingYears", title="Working Years by Education Field"))
     st.plotly_chart(px.histogram(df, x="JobSatisfaction", color="Attrition", barmode="group", title="Attrition vs Job Satisfaction"))
     st.plotly_chart(px.histogram(df, x="WorkLifeBalance", color="Attrition", barmode="group", title="Attrition vs Work-Life Balance"))
+    st.plotly_chart(px.histogram(df, x="Department", color="Attrition", barmode="group", title="Attrition Rate by Department"))
+    st.plotly_chart(px.histogram(df, x="Gender", color="Attrition", barmode="group", title="Attrition Rate by Gender"))
+    st.plotly_chart(px.bar(df.groupby("JobRole")[["PerformanceRating"]].mean().reset_index(), x="JobRole", y="PerformanceRating", title="Top Performing Job Roles"))
+    st.plotly_chart(px.scatter(df, x="MonthlyIncome", y="PerformanceRating", color="JobRole", title="Monthly Income vs Performance Rating"))
+    st.subheader("Correlation Heatmap")
+    corr = df.corr(numeric_only=True)
+    fig, ax = plt.subplots(figsize=(12, 8))
+    sns.heatmap(corr, cmap="coolwarm", annot=False, ax=ax)
+    st.pyplot(fig)
 
 # --- Footer ---
 st.markdown("""
